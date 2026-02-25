@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Bot para extraer boletas de honorarios del SII de Chile de manera automatizada">
+    <title>Bot Honorarios SII - Extractor de Boletas</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+</head>
+<body>
+    <!-- Background effects -->
+    <div class="bg-gradient"></div>
+    <div class="floating-orb"></div>
+    <div class="floating-orb"></div>
+    <div class="floating-orb"></div>
+
+    <div class="main-container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-logo">
+                <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zM6 20V4h7v5h5v11H6z"/><path d="M8 12h8v2H8zm0 4h5v2H8z"/></svg>
+            </div>
+            <h1>Bot Honorarios SII</h1>
+            <p>Extractor automatizado de boletas de honorarios</p>
+        </header>
+
+        <!-- ===================== VIEW 1: CONFIGURACION ===================== -->
+        <div id="view-config" class="view active">
+            <!-- Upload Card -->
+            <div class="glass-card">
+                <div class="card-title">
+                    <div class="icon">
+                        <svg viewBox="0 0 24 24"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/></svg>
+                    </div>
+                    Subir archivo Excel
+                </div>
+
+                <div class="dropzone" id="dropzone" onclick="document.getElementById('file-input').click()">
+                    <div class="dropzone-icon">
+                        <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm4 18H6V4h7l5 5v11z"/><path d="M12 12l-4 4h3v4h2v-4h3z"/></svg>
+                    </div>
+                    <div class="dropzone-text">Arrastra tu archivo Excel aqui</div>
+                    <div class="dropzone-subtext">o haz clic para seleccionar &bull; .xlsx, .xls</div>
+                    <div class="dropzone-filename" id="filename"></div>
+                    <input type="file" id="file-input" accept=".xlsx,.xls">
+                </div>
+
+                <!-- Estructura requerida del Excel -->
+                <div class="excel-structure">
+                    <h3>Estructura requerida del Excel</h3>
+                    <table class="excel-table">
+                        <thead>
+                            <tr>
+                                <th><span class="col-badge">A</span>Columna A</th>
+                                <th><span class="col-badge">B</span>Columna B</th>
+                                <th><span class="col-badge">C</span>Columna C</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Nombre de la empresa</td>
+                                <td>RUT (ej: 12.345.678-9)</td>
+                                <td>Clave SII</td>
+                            </tr>
+                            <tr>
+                                <td>Empresa ABC Ltda.</td>
+                                <td>76.543.210-K</td>
+                                <td>miClave123</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Preview de empresas -->
+                <div class="companies-preview" id="companies-preview">
+                    <div class="preview-header">
+                        <h3>Empresas detectadas</h3>
+                        <span class="preview-count" id="preview-count">0</span>
+                    </div>
+                    <div id="companies-chips"></div>
+                </div>
+            </div>
+
+            <!-- Date Selection Card -->
+            <div class="glass-card">
+                <div class="card-title">
+                    <div class="icon">
+                        <svg viewBox="0 0 24 24"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19a2 2 0 0 0 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM9 10H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2z"/></svg>
+                    </div>
+                    Periodo de consulta
+                </div>
+
+                <div class="date-selectors">
+                    <div class="form-group">
+                        <label for="select-mes">Mes</label>
+                        <select id="select-mes" class="form-select">
+                            <option value="01">Enero</option>
+                            <option value="02">Febrero</option>
+                            <option value="03">Marzo</option>
+                            <option value="04">Abril</option>
+                            <option value="05">Mayo</option>
+                            <option value="06">Junio</option>
+                            <option value="07">Julio</option>
+                            <option value="08">Agosto</option>
+                            <option value="09">Septiembre</option>
+                            <option value="10">Octubre</option>
+                            <option value="11">Noviembre</option>
+                            <option value="12">Diciembre</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="select-anio">Anio</label>
+                        <select id="select-anio" class="form-select">
+                            <option value="2021">2021</option>
+                            <option value="2022">2022</option>
+                            <option value="2023">2023</option>
+                            <option value="2024">2024</option>
+                            <option value="2025">2025</option>
+                            <option value="2026" selected>2026</option>
+                            <option value="2027">2027</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="date-info">
+                    <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+                    <span>Los anios disponibles en el SII para consultar van desde el 2021 hasta el 2027. Seleccione el periodo deseado.</span>
+                </div>
+            </div>
+
+            <!-- Start Button -->
+            <button class="btn-primary" id="btn-start" disabled>
+                <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                Iniciar procesamiento
+            </button>
+        </div>
+
+        <!-- ===================== VIEW 2: PROCESAMIENTO ===================== -->
+        <div id="view-processing" class="view">
+            <!-- Toolbar -->
+            <div class="toolbar">
+                <div class="toolbar-left">
+                    <button class="btn-secondary" id="btn-back" onclick="goBack()">
+                        <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+                        Volver
+                    </button>
+                    <span class="text-muted text-small" id="processing-period"></span>
+                </div>
+                <div class="toolbar-right">
+                    <button class="btn-success" id="btn-download" style="display:none" onclick="downloadExcel()">
+                        <svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+                        Descargar Excel
+                    </button>
+                </div>
+            </div>
+
+            <!-- Progress -->
+            <div class="glass-card progress-section">
+                <div class="card-title">
+                    <div class="icon">
+                        <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zM7 10h2v7H7zm4-3h2v10h-2zm4 6h2v4h-2z"/></svg>
+                    </div>
+                    Progreso del procesamiento
+                </div>
+                <div class="progress-info">
+                    <span class="progress-text" id="progress-text">Esperando inicio...</span>
+                    <span class="progress-percentage" id="progress-percentage">0%</span>
+                </div>
+                <div class="progress-bar-container">
+                    <div class="progress-bar" id="progress-bar"></div>
+                </div>
+                <div class="progress-status" id="progress-status"></div>
+            </div>
+
+            <!-- Log Console -->
+            <div class="glass-card">
+                <div class="card-title">
+                    <div class="icon">
+                        <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H4V8h16v10zM6 10h2v2H6zm4 0h8v2h-8zm-4 4h2v2H6zm4 0h8v2h-8z"/></svg>
+                    </div>
+                    Registro de actividad
+                </div>
+                <div class="log-console" id="log-console"></div>
+            </div>
+
+            <!-- Empresas Results -->
+            <div class="glass-card">
+                <div class="card-title">
+                    <div class="icon">
+                        <svg viewBox="0 0 24 24"><path d="M12 7V3H2v18h20V7H12zM6 19H4v-2h2v2zm0-4H4v-2h2v2zm0-4H4V9h2v2zm0-4H4V5h2v2zm4 12H8v-2h2v2zm0-4H8v-2h2v2zm0-4H8V9h2v2zm0-4H8V5h2v2zm10 12h-8v-2h2v-2h-2v-2h2v-2h-2V9h8v10zm-2-8h-2v2h2v-2zm0 4h-2v2h2v-2z"/></svg>
+                    </div>
+                    Resultados por empresa
+                    <span class="text-muted text-small" style="margin-left:auto" id="results-summary"></span>
+                </div>
+                <div class="empresas-grid" id="empresas-grid"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
