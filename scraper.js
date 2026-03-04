@@ -12,6 +12,7 @@ function randomDelay(min = 800, max = 2000) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+
 async function procesarEmpresa(browser, empresa, mes, anio, broadcast, index, total) {
     const page = await browser.newPage();
     const empresaNombre = empresa.nombre;

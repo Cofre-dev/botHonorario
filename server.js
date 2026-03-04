@@ -133,7 +133,7 @@ app.post('/api/descargar-excel', (req, res) => {
 
             // Limpiar el RUT para usarlo en el nombre del archivo
             const rutLimpio = (emp.rut || 'sin-rut').replace(/\./g, '').replace(/\//g, '');
-            const fileName = `Honorarios_${rut}_${mesNombre}_${anio}.xlsx`;
+            const fileName = `Honorarios_${rutLimpio}_${mesNombre}_${anio}.xlsx`;
             const filePath = path.join(downloadsPath, fileName);
 
             XLSX.writeFile(wb, filePath);
